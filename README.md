@@ -42,6 +42,24 @@ lens export . --format md --output report.md
 
 # Compare branches
 lens diff main feature-branch
+
+# Search the codebase
+lens search "authentication" .
+
+# Codebase health score
+lens health .
+
+# Find TODOs/FIXMEs
+lens todo .
+
+# Visual size breakdown
+lens size .
+
+# New developer walkthrough
+lens onboard .
+
+# Security scan
+lens security .
 ```
 
 ## What You Get
@@ -76,6 +94,57 @@ of code across 2 languages. Primary languages: Python (95.2%), Shell (4.8%).
 There are 3 entry points, starting from cli.py. The project depends on 5
 external packages. It includes tests, CI/CD.
 ```
+
+### `lens search` — Natural Language Codebase Search
+
+```bash
+lens search "authentication" .
+lens search "database models" --max-results 10
+```
+
+Keyword/heuristic search with synonym expansion, function/class name matching, and relevance scoring.
+
+### `lens health` — Codebase Health Score
+
+```bash
+lens health .
+```
+
+Scores your codebase 0-100 across 5 categories: Code Quality, Organization, Testing, Documentation, and Maintenance. Returns a letter grade (A-F) with actionable recommendations.
+
+### `lens todo` — Find Code Markers
+
+```bash
+lens todo .
+lens todo . --severity critical
+```
+
+Finds TODO, FIXME, HACK, BUG, XXX, NOTE, and OPTIMIZE markers. Groups by severity (critical/warning/info).
+
+### `lens size` — Visual Space Breakdown
+
+```bash
+lens size .
+```
+
+Shows project size breakdown by directory, language, and file extension with proportional bar charts.
+
+### `lens onboard` — Codebase Walkthrough
+
+```bash
+lens onboard .
+```
+
+Generates a step-by-step walkthrough for new developers: project overview, structure, entry points, architecture, dependencies, and tips.
+
+### `lens security` — Security Scanner
+
+```bash
+lens security .
+lens security . --severity high
+```
+
+Scans for hardcoded secrets, SQL injection, command injection, weak crypto, debug mode, insecure config. Returns a risk score 0-100. Exits with code 1 on critical/high findings (CI-friendly).
 
 ## Supported Languages
 
@@ -132,7 +201,7 @@ Rust: Actix, Rocket
 The JSON export contains:
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "project": { "primaryLanguage", "frameworks", "architecture", ... },
   "stats": { "totalFiles", "codeLines", "languageBreakdown", ... },
   "files": [{ "path", "language", "lines", "size" }],
@@ -168,6 +237,27 @@ lens export [PATH]      Export analysis
   --no-git              Skip git history analysis
 
 lens diff BRANCH1 BRANCH2 [PATH]   Compare two branches
+
+lens search QUERY [PATH]  Search codebase with keywords
+  -n, --max-results N   Max results (default: 20)
+  --no-git              Skip git recency boost
+
+lens health [PATH]       Codebase health score 0-100
+  --no-git              Skip git history analysis
+
+lens todo [PATH]         Find TODO/FIXME/HACK markers
+  --severity LEVEL      Filter: critical | warning | info | all
+  --ignore PATTERN      Extra patterns to ignore
+
+lens size [PATH]         Visual space breakdown
+  --no-git              Skip git history analysis
+
+lens onboard [PATH]      Interactive codebase walkthrough
+  --no-git              Skip git history analysis
+
+lens security [PATH]     Scan for security issues
+  --severity LEVEL      Filter: critical | high | medium | low | all
+  --ignore PATTERN      Extra patterns to ignore
 
 lens --version          Show version
 lens --help             Show help
