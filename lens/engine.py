@@ -14,10 +14,13 @@ from lens.analyzer.entry_points import find_entry_points
 from lens.analyzer.hotspots import calculate_hotspots
 from lens.analyzer.stats import calculate_stats
 from lens.models import (
+    ArchitecturePattern,
     FileInfo,
     Language,
     ModuleInfo,
     ProjectAnalysis,
+    ProjectDetection,
+    ProjectStats,
 )
 from lens.scanner.detector import detect_project
 from lens.scanner.generic_scanner import scan_generic_file
@@ -155,7 +158,13 @@ def _parse_modules(file_paths: list[Path], root: Path) -> list[ModuleInfo]:
     return modules
 
 
-def _generate_explanation(detection, stats, architecture, entry_points, ext_deps) -> str:
+def _generate_explanation(
+    detection: ProjectDetection,
+    stats: ProjectStats,
+    architecture: ArchitecturePattern,
+    entry_points: list[str],
+    ext_deps: list[str],
+) -> str:
     """Generate a plain-English explanation of the project."""
     parts: list[str] = []
 

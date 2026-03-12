@@ -165,7 +165,7 @@ def _collect_package_deps(root: Path) -> set[str]:
 
 
 def _find_circular_deps(edges: list[DependencyEdge]) -> list[list[str]]:
-    """Find circular dependencies using DFS."""
+    """Find circular dependencies using iterative DFS."""
     graph: dict[str, list[str]] = {}
     for edge in edges:
         graph.setdefault(edge.source, []).append(edge.target)
@@ -173,27 +173,43 @@ def _find_circular_deps(edges: list[DependencyEdge]) -> list[list[str]]:
     visited: set[str] = set()
     rec_stack: set[str] = set()
     cycles: list[list[str]] = []
+    seen_cycles: set[tuple[str, ...]] = set()
 
-    def _dfs(node: str, path: list[str]) -> None:
-        visited.add(node)
-        rec_stack.add(node)
-        path.append(node)
+    for start in graph:
+        if start in visited:
+            continue
+        # Iterative DFS with explicit stack: (node, neighbor_index, path)
+        stack: list[tuple[str, int, list[str]]] = [(start, 0, [start])]
+        visited.add(start)
+        rec_stack.add(start)
 
-        for neighbor in graph.get(node, []):
-            if neighbor not in visited:
-                _dfs(neighbor, path)
-            elif neighbor in rec_stack:
-                # Found cycle
-                cycle_start = path.index(neighbor)
-                cycle = path[cycle_start:] + [neighbor]
-                if len(cycle) <= 10:  # Only report small cycles
-                    cycles.append(cycle)
+        while stack:
+            node, idx, path = stack[-1]
+            neighbors = graph.get(node, [])
 
-        path.pop()
-        rec_stack.discard(node)
+            if idx < len(neighbors):
+                stack[-1] = (node, idx + 1, path)
+                neighbor = neighbors[idx]
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    rec_stack.add(neighbor)
+                    stack.append((neighbor, 0, path + [neighbor]))
+                elif neighbor in rec_stack:
+                    try:
+                        cycle_start = path.index(neighbor)
+                    except ValueError:
+                        continue
+                    cycle = path[cycle_start:] + [neighbor]
+                    if len(cycle) <= 10:
+                        canonical = tuple(cycle)
+                        if canonical not in seen_cycles:
+                            seen_cycles.add(canonical)
+                            cycles.append(cycle)
+            else:
+                stack.pop()
+                rec_stack.discard(node)
 
-    for node in graph:
-        if node not in visited:
-            _dfs(node, [])
+            if len(cycles) >= 10:
+                return cycles
 
-    return cycles[:10]  # Limit to 10 cycles
+    return cycles

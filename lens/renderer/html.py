@@ -238,7 +238,7 @@ function renderFileTree(files){
   let html='';
   for(const f of sorted.slice(0,500)){
     const cls=entrySet.has(f.path)?'entry':dangerSet.has(f.path)?'danger':'';
-    html+=`<li class="${cls}" title="${f.path} (${f.lines} loc)">${f.path}</li>`;
+    html+=`<li class="${cls}" title="${escapeHtml(f.path)} (${f.lines} loc)">${escapeHtml(f.path)}</li>`;
   }
   tree.innerHTML=html;
 }

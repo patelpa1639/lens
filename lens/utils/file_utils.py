@@ -215,6 +215,12 @@ def collect_files(
         for entry in entries:
             if should_ignore(entry, root, gitignore_patterns, extra_ignores):
                 continue
+            # Prevent symlink traversal outside root
+            if entry.is_symlink():
+                try:
+                    entry.resolve().relative_to(root)
+                except ValueError:
+                    continue
             if entry.is_dir():
                 _walk(entry, depth + 1)
             elif entry.is_file():
